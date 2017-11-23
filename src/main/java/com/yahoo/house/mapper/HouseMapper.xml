@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yahoo.house.mapper.HouseMapper">
+	<resultMap type="houseType" id="houseTypeResultMap">
+		<id property="id" column="typeid" />
+		<result property="name" column="typename" />
+	</resultMap>
+	<resultMap type="district" id="districtResultMap">
+		<id property="id" column="name" />
+		<result property="name" column="distname" />
+	</resultMap>
+
+	<resultMap type="contacter" id="contacterResultMap">
+		<result property="name" column="contacterName" />
+		<result property="tel" column="contacterTel" />
+		<result property="qq" column="contacterQQ" />
+		<result property="email" column="contacterEmail" />
+	</resultMap>
+
+	<resultMap type="user" id="userResultMap">
+		<id property="id" column="userid" />
+		<result property="username" column="username" />
+	</resultMap>
+
+
+
+	<resultMap type="house" id="houseResultMap">
+		<id property="id" column="houseid" />
+		<result property="title" column="title" />
+		<result property="area" column="area" />
+		<result property="floor" column="floor" />
+		<result property="totalFloor" column="totalFloor" />
+		<result property="price" column="price" />
+		<result property="street" column="street" />
+		<result property="mainPhoto" column="mainPhoto" />
+		<result property="pubDate" column="pubDate" />
+		<result property="detail" column="detail" />
+		<association property="user" resultMap="" />
+		<association property="contacter" resultMap="" />
+		<association property="district" resultMap="" />
+		<association property="houseType" resultMap="" />
+		<association property="user" resultMap="userResultMap" />
+		<association property="contacter" resultMap="contacterResultMap" />
+		<association property="district" resultMap="districtResultMap" />
+		<association property="houseType" resultMap="houseTypeResultMap" />
+	</resultMap>
+
+	<select id="findBySearchParam" resultMap="houseResultMap">
+		select
+		houseid,title,area,floor,totalFloor,price,street,mainPhoto,pubDate,
+		detail,
+		userid, username,
+		contacterName, contacterTel, contacterQQ, contacterEmail,
+		distid, distname,
+		typeid, typename
+		from tb_house
+		left outer join tb_user on user_id=userid
+		left outer join tb_district on district_id=distid
+		left outer join tb_house_type on house_type_id=typeid
+		<where>
+			<if test="houseInfo.price!=null">
+				and price between #{houseInfo.minPrice} and #{houseInfo.maxPrice}
+			</if>
+			<if test="houseInfo.area !=null">
+				and area between #{houseInfo.minArea} and #{houseInfo.maxArea}
+			</if>
+			<if test="houseInfo.title!=null and houseInfo.title.length !=0">
+				and title like concat('%',#{houseInfo.title},'%')
+			</if>
+			<if test="houseInfo.houseType !=null and houseInfo.houseType.id!=0">
+				and house_type_id=#{houseInfo.houseType.id}
+			</if>
+		</where>
+		order by pubDate desc
+		limit #{offset},#{size}
+	</select>
+	<select id="countBySearchParam" resultType="int">
+		select count(houseid)
+		from tb_house
+		<where>
+			<if test="houseInfo.price!=null">
+				and price between #{houseInfo.minPrice} and #{houseInfo.maxPrice}
+			</if>
+			<if test="houseInfo.area!=null">
+				and area between #{houseInfo.minArea} and #{houseInfo.maxArea}
+			</if>
+			<if test="houseInfo.title != null and houseInfo.title.length != 0">
+				and title like concat('%', #{houseInfo.title}, '%')
+			</if>
+			<if test="houseInfo.houseType != null and houseInfo.houseType.id != 0">
+				and house_type_id=#{houseInfo.houseType.id}
+			</if>
+		</where>
+	</select>
+
+
+
+</mapper>
